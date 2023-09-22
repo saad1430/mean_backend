@@ -2,9 +2,17 @@ const express = require('express');
 const app = express();
 const morgan = require('morgan');
 const mongoose = require('mongoose');
+const cors = require('cors');
+
+// Should be on top otherwise API will not respond to frontend
+app.use(cors());
+app.options('*',cors());
 
 // Importing Router
-const productsRouter = require('./routers/product');
+const categoryRouter = require('./routers/category');
+const orderRouter = require('./routers/order');
+const productRouter = require('./routers/product');
+const userRouter = require('./routers/user');
 
 // Environment Variables
 require('dotenv/config');
@@ -16,7 +24,10 @@ app.use(express.json());
 app.use(morgan('tiny'));
 
 // APIs
-app.use(`${api}/products`, productsRouter);
+app.use(`${api}/category`, categoryRouter);
+app.use(`${api}/order`, orderRouter);
+app.use(`${api}/product`, productRouter);
+app.use(`${api}/user`, userRouter);
 
 
 // Connection string
