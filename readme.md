@@ -1,0 +1,1 @@
+This project is the backend for `MEAN Stack` Ecommerce project. It is based on nodejs, express and mongodb.
