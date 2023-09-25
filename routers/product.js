@@ -10,9 +10,9 @@ router.get(`/`, async (req, res) => {
   filter = { category: req.query.categories.split(',') }  
   const productList = await Product.find(filter).populate('category')
   if (!productList) {
-    res.status(500).json({ success: false })
+    return res.status(500).json({ success: false })
   }
-  res.send(productList)
+  return res.send(productList)
 })
 
 router.get(`/one/:id`, async (req, res) => {
@@ -23,13 +23,14 @@ router.get(`/one/:id`, async (req, res) => {
         .json({ success: false, message: 'Product ID is not valid' })
     const product = await Product.findById(req.params.id).populate('category')
     if (!product) {
-      res.status(404).json({ success: false, message:'No product found' })
+      return res
+        .status(404)
+        .json({ success: false, message: 'No product found' })
     }
-    res.status(200).json({ success: true, product:product })
+    return res.status(200).json({ success: true, product: product })
   }catch(err){
-    res.json({success:false,error:err})
+    return res.json({ success: false, error: err })
   }
-  
 })
 
 router.post(`/create`, async (req, res) => {
@@ -134,9 +135,9 @@ router.get(`/count`, async (req, res) => {
   try{
     const productCount = await Product.countDocuments()
     if (!productCount) {
-      res.status(500).json({ success: false })
+      return res.status(500).json({ success: false })
     }
-    res.status(200).json({success:true,productCount:productCount})
+    return res.status(200).json({ success: true, productCount: productCount })
   }
   catch(err){
     return res.json({success:false, error:err})
@@ -148,9 +149,9 @@ router.get(`/featured/:count?`, async (req, res) => {
     const count = req.params.count ? req.params.count : 4;
     const featuredProducts = await Product.find({isFeatured:true}).populate('category').limit(parseInt(count));
     if (!featuredProducts) {
-      res.status(500).json({ success: false })
+      return res.status(500).json({ success: false })
     }
-    res.json({success:true,featuredProducts:featuredProducts})
+    return res.json({ success: true, featuredProducts: featuredProducts })
   }
   catch(err){
     return res.json({success:false, error:err})

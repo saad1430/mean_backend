@@ -5,9 +5,9 @@ const { Category } = require('../models/category')
 router.get(`/`, async (req, res) => {
   const categoryList = await Category.find()
   if (!categoryList) {
-    res.status(500).json({ success: false })
+    return res.status(500).json({ success: false })
   }
-  res.status(200).send(categoryList)
+  return res.status(200).send(categoryList)
 })
 
 router.get(`/:id`, (req, res) => {
@@ -39,7 +39,7 @@ router.post(`/`, async (req, res) => {
   if (!createdCategory) {
     return res.status(404).send('Category cannot be created!')
   }
-  res.send(createdCategory)
+  return res.send(createdCategory)
 })
 
 router.put('/:id', async (req,res)=>{
@@ -54,7 +54,7 @@ router.put('/:id', async (req,res)=>{
   if (!updateCategory) {
     return res.status(404).send('Category cannot be updated!');
   }
-  res.send(updateCategory);
+  return res.send(updateCategory)
 });
 
 router.delete('/:id', (req, res) => {
