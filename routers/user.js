@@ -128,4 +128,35 @@ router.post(`/register`, async (req, res) => {
   }
 })
 
+router.delete('/:id', async (req, res) => {
+  const user = await User.findById(req.params.id)
+  if(user){
+    if (user && bcrypt.compareSync(req.body.password, user.passwordHash)){
+      const deletedUser = await User.findByIdAndRemove(req.params.id)
+      return res.status(200).json({ success:true, deletedUser, message: 'User has been deleted successfully' })
+    }
+    else{
+      return res.status(400).json({ success: false, message: 'Incorrect Password' })
+    }
+  }
+  else{
+    return res.status(404).json({ sucess:false, message: 'User not found' })
+  }
+})
+
+// Additional APIs
+
+router.get(`/count`, async (req, res) => {
+  try{
+    const userCount = await User.countDocuments()
+    if (!userCount) {
+      return res.status(500).json({ success: false })
+    }
+    return res.status(200).json({ success: true, userCount: userCount })
+  }
+  catch(err){
+    return res.json({success:false, error:err})
+  }
+})
+
 module.exports = router
