@@ -19,12 +19,24 @@ function authJwt() {
 }
 
 async function isRevoked(req, token) {
+  const api = process.env.API_URL
+  const requestedRoute = req.originalUrl
+  const allowedRoutes = [{ url: /\/api\/v1\/order(.*)/ }]
   console.log(token)
   if (token.payload.isAdmin == false) {
     console.log('Not Admin')
-    return true
-  }
-  else if (token.payload.isAdmin == true) {
+    // Check if the requested route matches any of the allowed routes
+    const isAllowed = allowedRoutes.some((route) =>
+      route.url.test(requestedRoute)
+    )
+    if (isAllowed) {
+      console.log('Allowed Route')
+      return false // User is not revoked for allowed routes
+    } else {
+      console.log('Revoked for this route')
+      return true // User is revoked for routes not in the allowed list
+    }
+  } else if (token.payload.isAdmin == true) {
     console.log('Admin')
     return false
   }
