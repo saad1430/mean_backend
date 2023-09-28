@@ -3,24 +3,46 @@ const router = express.Router()
 const { Order } = require('../models/order')
 const { OrderItem } = require('../models/order-item')
 
-router.get(`/`, async (req, res) => {
-  const orderList = await Order.find().populate('orderItem user')
+router.get(`/public`, async (req, res) => {
+  const orderList = await Order.find()
+    .populate({
+      path: 'orderItem',
+      populate: { path: 'product', populate: 'category' },
+    })
+    .populate('user', 'name')
+    .sort({ dateOrdered: -1 })
   if (!orderList) {
-    res.status(500).json({ success: false })
+    res.status(500).json({ success: false, message: 'No orders found' })
   }
   res.send(orderList)
 })
 
-router.post(`/create`, async (req, res) => {
-  // creating order item first
-  const orderItems = Promise.all(req.body.orderItem.map(async (orderItem) => {
-    let newOrderItem = new OrderItem({
-      quantity: orderItem.quantity,
-      product: orderItem.product,
+router.get(`/public/one/:id`, async (req, res) => {
+  const order = await Order.findById(req.params.id)
+    .populate({
+      path: 'orderItem',
+      populate: { path: 'product', populate: 'category' },
     })
-    newOrderItem = await newOrderItem.save()
-    return newOrderItem._id
-  }))
+    .populate('user', 'name')
+    .sort({ dateOrdered: -1 })
+  if (!order) {
+    res.status(500).json({ success: false, message: 'No orders found' })
+  }
+  res.send(order)
+})
+
+router.post(`/public/create`, async (req, res) => {
+  // creating order item first
+  const orderItems = Promise.all(
+    req.body.orderItem.map(async (orderItem) => {
+      let newOrderItem = new OrderItem({
+        quantity: orderItem.quantity,
+        product: orderItem.product,
+      })
+      newOrderItem = await newOrderItem.save()
+      return newOrderItem._id
+    })
+  )
   const orderItemIds = await orderItems
   console.log(orderItemIds)
   // now creating order
@@ -44,8 +66,61 @@ router.post(`/create`, async (req, res) => {
   return res.send(createdOrder)
 })
 
-module.exports = router
+router.put('/private/update/:id', async (req, res) => {
+  const order = await Order.findByIdAndUpdate(
+    req.params.id,
+    {
+      status: req.body.status
+    },
+    { new: true }
+  )
+  if (order){
+    return res.status(200).json({ success:true, data: order })
+  }
+  else{
+    return res.status(400).json({ success:false, message: 'An error occured while updating status' })
+  }
+})
 
+router.delete('/public/cancel/:id', async (req, res) => {
+  const order = await Order.findByIdAndUpdate(
+    req.params.id,
+    {
+      status: 'Cancelled',
+    },
+    { new: true }
+  )
+  if (order) {
+    return res.status(200).json({ success: true, data: order })
+  } else {
+    return res
+      .status(400)
+      .json({
+        success: false,
+        message: 'An error occured while updating status',
+      })
+  }
+})
+
+router.delete('/public/delete/:id', async (req, res) => {
+  const order = await Order.findById(req.params.id)
+  if (order) {
+    await order.orderItem.map(async orderItem => {
+      await OrderItem.findByIdAndRemove(orderItem)
+    })
+    await Order.deleteOne(order._id)
+    return res.status(200).json({ success: true, message: 'Order has been deleted successfully' })
+  } else {
+    return res
+      .status(400)
+      .json({
+        success: false,
+        message: 'An error occured while updating status',
+      })
+  }
+})
+
+module.exports = router
 
 // {
 //     "orderItem" : [

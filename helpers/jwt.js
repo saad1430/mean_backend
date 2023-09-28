@@ -21,7 +21,7 @@ function authJwt() {
 async function isRevoked(req, token) {
   const api = process.env.API_URL
   const requestedRoute = req.originalUrl
-  const allowedRoutes = [{ url: /\/api\/v1\/order(.*)/ }]
+  const allowedRoutes = [{ url: /\/api\/v1\/order\/public(.*)/ }]
   console.log(token)
   if (token.payload.isAdmin == false) {
     console.log('Not Admin')
