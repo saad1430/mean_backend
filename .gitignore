@@ -2,3 +2,7 @@
 /.prettierrc
 /node_modules
 /help.md
+/public/uploads/*.*
+!/public/uploads/*.md
+/public/uploads/*/*.*
+!/public/uploads/*/*.md
